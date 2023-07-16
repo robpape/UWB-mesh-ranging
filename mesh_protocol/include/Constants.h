@@ -36,7 +36,6 @@
  * - OSI Approved License: https://opensource.org/licenses/Apache-2.0
  */
 
-
 /** @file Constants.h
 *   @brief Defines some constants that cannot got into config because their value is needed at compile time
 */  

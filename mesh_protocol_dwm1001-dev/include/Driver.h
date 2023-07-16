@@ -53,6 +53,10 @@
 
 #include "TimeKeeping.h" // debugging
 
+#ifdef SIMULATION
+#include "mex.h"
+#endif
+
 typedef struct DriverStruct * Driver;
 
 typedef struct DriverStruct{

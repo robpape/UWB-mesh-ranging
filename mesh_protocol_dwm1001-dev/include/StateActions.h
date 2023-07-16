@@ -52,6 +52,10 @@
 #include "Scheduler.h"
 #include "MessageHandler.h"
 
+#ifdef SIMULATION
+#include "mex.h"
+#endif
+
 /** Actions to carry out when the node is unconnected listening and a message comes in
 * @param node is the Node struct of the node that should perform this action
 * @param msg is an incoming message from another node

@@ -54,6 +54,9 @@ MessageHandler MessageHandler_Create() {
 };
 
 void MessageHandler_HandlePingUnconnected(Node node, Message msg) {
+#ifdef SIMULATION
+  mexPrintf("Node %" PRIu8 " handles ping unconnected \n", node->id);
+#endif
   // this node does not have a network (unconnected), so it joins the network of the node whose ping it received
   joinNetwork(node, msg);
   // cancel any scheduled pings cause they are not valid in the new network
@@ -73,11 +76,18 @@ void MessageHandler_HandlePingConnected(Node node, Message msg) {
   bool isForeignPing = NetworkManager_IsPingFromForeignNetwork(node, msg);
 
   if (isForeignPing) {
+    #ifdef SIMULATION
+        mexPrintf("Node %" PRIu8 " receives ping from foreign network \n", node->id);
+    #endif
+
     // if the ping is from a different network, check which network precedes
     // the nodes from the not preceding network must join the preceding network when they receive a ping from it
     bool foreignNetPrecedes = NetworkManager_IsForeignNetworkPreceding(node, msg);
     if (foreignNetPrecedes) {
       // switch to the other network
+      #ifdef SIMULATION
+        mexPrintf("Node %" PRIu8 " switches to preceding network \n", node->id);
+      #endif
 
       // join the other network
       joinNetwork(node, msg);
@@ -87,6 +97,9 @@ void MessageHandler_HandlePingConnected(Node node, Message msg) {
       updateSlots(node, msg);
 
     } else if (NetworkManager_DoNetworksHaveSameAge(node, msg)) {
+      #ifdef SIMULATION
+        mexPrintf("Node %" PRIu8 ": networks have different ID but same age \n", node->id);
+      #endif
       // networks have different ID but same age (this should be extremely unlikely to happen in reality)
       // cancel ping and leave the network, so the node goes back to unconnected listening
       Scheduler_CancelScheduledPing(node);
@@ -96,6 +109,9 @@ void MessageHandler_HandlePingConnected(Node node, Message msg) {
     } else {
       // own network precedes
       // do nothing
+      #ifdef SIMULATION
+        mexPrintf("Node %" PRIu8 ": own network precedes \n", node->id);
+      #endif
     };
   } else {
     // ping is not from foreign network
@@ -159,19 +175,62 @@ void MessageHandler_SendRangingPollMessage(Node node) {
 };
 
 void MessageHandler_SendRangingResponseMessage(Node node, Message pollMsgIn) {
+#ifdef SIMULATION
+  Message msg;
+  struct MessageStruct message;
+  msg = &message;
+  msg->type = RESPONSE;
+
+  createRangingResponseMessage(node, msg, pollMsgIn);
+
+  Driver_TransmitResponse(node, msg);
+#endif
+
+#ifndef SIMULATION
   Driver_TransmitResponse(node, pollMsgIn);
+#endif
 };
 
 void MessageHandler_SendRangingFinalMessage(Node node, Message responseMsgIn) {
+#ifdef SIMULATION
+  Message msg;
+  struct MessageStruct message;
+  msg = &message;
+  msg->type = FINAL;
+
+  createRangingFinalMessage(node, msg, responseMsgIn);
+
+  Driver_TransmitFinal(node, msg);
+#endif
+
+#ifndef SIMULATION
   Driver_TransmitFinal(node, responseMsgIn);
+#endif
 };
 
 void MessageHandler_SendRangingResultMessage(Node node, Message finalMsgIn) {
+#ifdef SIMULATION
+  Message msg;
+  struct MessageStruct message;
+  msg = &message;
+  msg->type = RESULT;
+
+  createRangingResultMessage(node, msg, finalMsgIn);
+
+  Driver_TransmitResult(node, msg);
+#endif
+
+#ifndef SIMULATION
   Driver_TransmitResult(node, finalMsgIn); 
+#endif
 };
 
 
 static void joinNetwork(Node node, Message msg) {
+#ifdef SIMULATION
+  mexPrintf("Node %" PRIu8 " joins network of node %" PRIu8 "\n", node->id, msg->senderId);
+#endif
+
   // set the network status and ID
   NetworkManager_SetNetworkStatus(node, CONNECTED);
   NetworkManager_SetNetworkId(node, msg->networkId);
@@ -222,6 +281,9 @@ static void updateSlots(Node node, Message msg) {
 
   // release colliding own slots
   for (int i = 0; i < numCollidingOwn; ++i) {
+  #ifdef SIMULATION
+    mexPrintf("Node %" PRIu8 " releases own slot %" PRId8 "\n", node->id, collidingOwnSlots[i]);
+  #endif
     SlotMap_ReleaseOwnSlot(node, collidingOwnSlots[i]);
   };
 
@@ -230,6 +292,9 @@ static void updateSlots(Node node, Message msg) {
   int8_t numCollidingPending = SlotMap_CheckPendingSlotsForCollisions(node, msg, &collidingPendingSlots[0], MAX_NUM_PENDING_SLOTS);
   // release colliding pending slots
   for (int i = 0; i < numCollidingPending; ++i) {
+  #ifdef SIMULATION
+    mexPrintf("Node %" PRIu8 " releases pending slot %" PRId8 "\n", node->id, collidingPendingSlots[i]);
+  #endif
     SlotMap_ReleasePendingSlot(node, collidingPendingSlots[i]);
   };
 
@@ -322,12 +387,24 @@ static void correctOwnTime(Node node, Message msg) {
     candidate1 = (msg->timeSinceFrameStart + node->config->frameLength) - timeSinceFrameStart;  // the sending node is a frame ahead
   };
 
+  #ifdef SIMULATION
+  #ifdef DEBUG
+  mexPrintf("Node %" PRIu8 " timeSinceFrameStart: %" PRId64 "; timeSinceFrameStart in msg: %" PRId64 "\n", node->id, timeSinceFrameStart, msg->timeSinceFrameStart);
+  #endif
+  #endif
+
   int64_t candidate2 = msg->timeSinceFrameStart - timeSinceFrameStart; // both nodes (this and the other) are in the same frame
   // choose the smaller absolute value as the correction value (smaller one is the correct one, the larger one is the one where both nodes are in different frames)
   int64_t correctionValue = (abs(candidate1) < abs(candidate2)) ? candidate1 : candidate2;
 
   // do not correct by the full difference but only by a fraction at a time
   correctionValue = round(correctionValue/8);
+
+  #ifdef SIMULATION
+  #ifdef DEBUG
+  mexPrintf("Node %" PRIu8 " correctionValue: %" PRId64 "\n", node->id, correctionValue);
+  #endif
+  #endif
 
   ProtocolClock_CorrectTime(node->clock, correctionValue);
 };

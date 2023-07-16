@@ -52,6 +52,10 @@
 
 #include "Message.h" // TESTING ONLY
 
+#ifdef SIMULATION
+#include "mex.h"
+#endif
+
 enum States {
   OFF = 0, 
   LISTENING_UNCONNECTED = 1, 

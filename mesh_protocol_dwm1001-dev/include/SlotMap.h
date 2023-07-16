@@ -60,6 +60,10 @@
 #include "Config.h"
 #include "RandomNumbers.h"
 
+#ifdef SIMULATION
+#include "mex.h"
+#endif
+
 enum SlotOccupancy {
   FREE, OCCUPIED, COLLIDING
 };

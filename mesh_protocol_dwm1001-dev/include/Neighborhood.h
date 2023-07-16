@@ -50,6 +50,10 @@
 #include "Util.h"
 #include "Config.h"
 
+#ifdef SIMULATION
+#include "mex.h"
+#endif
+
 typedef struct NeighborhoodStruct * Neighborhood;
 
 /**

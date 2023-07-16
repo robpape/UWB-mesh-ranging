@@ -52,6 +52,10 @@
 #include <inttypes.h>
 #include "Node.h"
 
+#ifdef SIMULATION
+#include "mex.h"
+#endif
+
 typedef struct LCGStruct * LCG;
 
 /** 

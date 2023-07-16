@@ -54,6 +54,10 @@
 #include "Neighborhood.h"
 #include "Scheduler.h"
 
+#ifdef SIMULATION
+#include "mex.h"
+#endif
+
 typedef struct MessageHandlerStruct * MessageHandler;
 
 typedef struct MessageHandlerStruct {

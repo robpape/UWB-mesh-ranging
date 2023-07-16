@@ -51,6 +51,10 @@
 #include "StateMachine.h"
 #include "SlotMap.h"
 
+#ifdef SIMULATION
+#include "mex.h"
+#endif
+
 typedef struct SchedulerStruct * Scheduler;
 
 /**

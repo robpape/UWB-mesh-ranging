@@ -76,6 +76,9 @@ bool Scheduler_SchedulePingAtTime(Node node, int64_t time) {
   printf("Node %d scheduled ping to %d \n", node->id, time);
 #endif
 
+  #ifdef SIMULATION
+  mexPrintf("Node %" PRIu8 " scheduled ping to %" PRId64 "\n", node->id, time);
+  #endif
   return true;
 };
 
@@ -106,6 +109,9 @@ void Scheduler_ScheduleNextPing(Node node) {
       int64_t upperBound = lowerBound + node->config->initialPingUpperLimit;
       scheduleTime = RandomNumbers_GetRandomIntBetween(node, lowerBound, upperBound);
 
+      #ifdef SIMULATION
+      mexPrintf("Node %" PRIu8 " scheduled initial ping to %" PRId64 "\n", node->id, scheduleTime);
+      #endif
       break;
     case LISTENING_CONNECTED: ;
       // when node is connected, the time of the next ping depends on whether it is a new reservation
@@ -130,11 +136,19 @@ void Scheduler_ScheduleNextPing(Node node) {
         // add a small delay so if two nodes reserved the same slot without having common neighbors, they have a chance 
         // of recognizing this (without delay they would always send at the same time and could never "see" each other)
         delay = getRegularRandomDelay(node);
+        #ifdef SIMULATION
+        mexPrintf("Node %" PRIu8 " schedules to own slot %" PRIu8 "\n", node->id, scheduleSlotNum);
+        #endif
       }
 
       if (scheduleSlotNum == -1) {// no reservable slots
         return;
       };
+
+      #ifdef SIMULATION
+      if (scheduleSlotNum == -1)
+        mexPrintf("No reservable slot");
+      #endif
 
       // schedule to the start of the slot + the random delay
       scheduleTime = TimeKeeping_CalculateNextStartOfSlot(node, scheduleSlotNum);

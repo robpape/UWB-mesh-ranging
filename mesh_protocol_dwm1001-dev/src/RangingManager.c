@@ -51,6 +51,9 @@ bool RangingManager_HasRangingTimedOut(Node node) {
 
   // ranging timed out if the other node did not answer to the last ranging message for a certain time
   if (localTime > (lastRangingMsgOutTime + node->config->rangingTimeOut)) {
+    #ifdef SIMULATION
+    mexPrintf("Node %" PRIu8 " ranging timed out \n", node->id);
+    #endif
     return true;
   };
 

@@ -52,6 +52,10 @@
 #include "Node.h"
 #include "LCG.h"
 
+#ifdef SIMULATION
+#include "mex.h"
+#endif
+
 /** Draw a random integer from a given range, including bounds
 * @param node is the Node struct of the node that should perform this action
 * @param lowerBound is the lower bound of the range that the random integer should be drawn from

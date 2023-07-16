@@ -51,6 +51,10 @@
 #include "Message.h"
 #include "TimeKeeping.h"
 
+#ifdef SIMULATION
+#include "mex.h"
+#endif
+
 typedef struct RangingManagerStruct * RangingManager;
 
 /** 

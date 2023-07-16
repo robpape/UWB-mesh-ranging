@@ -175,6 +175,7 @@ void MessageHandler_SendRangingPollMessage(Node node) {
 };
 
 void MessageHandler_SendRangingResponseMessage(Node node, Message pollMsgIn) {
+#ifdef SIMULATION
   Message msg;
   struct MessageStruct message;
   msg = &message;
@@ -183,10 +184,15 @@ void MessageHandler_SendRangingResponseMessage(Node node, Message pollMsgIn) {
   createRangingResponseMessage(node, msg, pollMsgIn);
 
   Driver_TransmitResponse(node, msg);
+#endif
 
+#ifndef SIMULATION
+  Driver_TransmitResponse(node, pollMsgIn);
+#endif
 };
 
 void MessageHandler_SendRangingFinalMessage(Node node, Message responseMsgIn) {
+#ifdef SIMULATION
   Message msg;
   struct MessageStruct message;
   msg = &message;
@@ -195,10 +201,15 @@ void MessageHandler_SendRangingFinalMessage(Node node, Message responseMsgIn) {
   createRangingFinalMessage(node, msg, responseMsgIn);
 
   Driver_TransmitFinal(node, msg);
+#endif
 
+#ifndef SIMULATION
+  Driver_TransmitFinal(node, responseMsgIn);
+#endif
 };
 
 void MessageHandler_SendRangingResultMessage(Node node, Message finalMsgIn) {
+#ifdef SIMULATION
   Message msg;
   struct MessageStruct message;
   msg = &message;
@@ -207,7 +218,11 @@ void MessageHandler_SendRangingResultMessage(Node node, Message finalMsgIn) {
   createRangingResultMessage(node, msg, finalMsgIn);
 
   Driver_TransmitResult(node, msg);
+#endif
 
+#ifndef SIMULATION
+  Driver_TransmitResult(node, finalMsgIn); 
+#endif
 };
 
 
@@ -383,7 +398,7 @@ static void correctOwnTime(Node node, Message msg) {
   int64_t correctionValue = (abs(candidate1) < abs(candidate2)) ? candidate1 : candidate2;
 
   // do not correct by the full difference but only by a fraction at a time
-  correctionValue = round(correctionValue/4);
+  correctionValue = round(correctionValue/8);
 
   #ifdef SIMULATION
   #ifdef DEBUG
@@ -391,6 +406,6 @@ static void correctOwnTime(Node node, Message msg) {
   #endif
   #endif
 
-  // ProtocolClock_CorrectTime(node->clock, correctionValue);
+  ProtocolClock_CorrectTime(node->clock, correctionValue);
 };
 

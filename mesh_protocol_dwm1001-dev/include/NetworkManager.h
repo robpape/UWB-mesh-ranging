@@ -48,6 +48,10 @@
 #include "ProtocolClock.h"
 #include "TimeKeeping.h"
 
+#ifdef SIMULATION
+#include "mex.h"
+#endif
+
 enum NetworkStatus {
   NOT_CONNECTED, CONNECTED
 };

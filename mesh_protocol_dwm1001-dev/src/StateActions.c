@@ -40,7 +40,11 @@
 
 void StateActions_ListeningUnconnectedIncomingMsgAction(Node node, Message msg) {
     switch(msg->type) {
-      case PING:
+      case PING: ;
+        #ifdef SIMULATION
+        int64_t localTime = ProtocolClock_GetLocalTime(node->clock);
+        mexPrintf("%" PRId64 ":Node %" PRIu8 " received ping from Node %" PRIu8 " in slot %" PRIu8 "\n", localTime, node->id, msg->senderId, TimeKeeping_CalculateCurrentSlotNum(node));
+        #endif
         MessageHandler_HandlePingUnconnected(node, msg);
         break;
     };
@@ -115,19 +119,48 @@ void StateActions_ListeningConnectedIncomingMsgAction(Node node, Message msg) {
 
   switch(msg->type) {
     case PING:
+      #ifdef SIMULATION
+      mexPrintf("%" PRId64 ": Node %" PRIu8 " received ping from Node %" PRIu8 "\n", localTime, node->id, msg->senderId);
+      #endif
+
+#if DEBUG_VERBOSE
+        // print information about the received message (if debugging, keep in mind this is what the other node "sees", not this one)
+        printf("Sender: %" PRId8 "\n", msg->senderId);
+        printf("Network: %" PRIu8 "\n", msg->networkId);
+
+        for(int i = 0; i < NUM_SLOTS; ++i) {
+          printf("1H (S%d): %d \n", (i+1), msg->oneHopSlotStatus[i]);
+          printf("1H ID (S%d): %" PRId8 "\n", (i+1), msg->oneHopSlotIds[i]);
+          printf("2H (S%d): %d \n", (i+1), msg->twoHopSlotStatus[i]);
+          printf("2H ID (S%d): %" PRId8 "\n", (i+1), msg->twoHopSlotIds[i]);
+        };
+#endif
+
       MessageHandler_HandlePingConnected(node, msg);
       break;
     case POLL:
-      //RangingManager_RecordRangingMsgIn(node, msg);
+     #ifdef SIMULATION
+      mexPrintf("%" PRId64 ": Node %" PRIu8 " received poll from Node %" PRIu8 " \n", localTime, node->id, msg->senderId);
+      #endif
+      RangingManager_RecordRangingMsgIn(node, msg);
       break;
     case RESPONSE:
-      //RangingManager_RecordRangingMsgIn(node, msg);
+     #ifdef SIMULATION
+      mexPrintf("%" PRId64 ": Node %" PRIu8 " received response from Node %" PRIu8 " \n", localTime, node->id, msg->senderId);
+      #endif
+      RangingManager_RecordRangingMsgIn(node, msg);
       break;
     case FINAL:
-      //RangingManager_RecordRangingMsgIn(node, msg);
+     #ifdef SIMULATION
+      mexPrintf("%" PRId64 ": Node %" PRIu8 " received final from Node %" PRIu8 " \n", localTime, node->id, msg->senderId);
+      #endif
+      RangingManager_RecordRangingMsgIn(node, msg);
       break;
     case RESULT:
-      //RangingManager_RecordRangingMsgIn(node, msg);
+      #ifdef SIMULATION
+      mexPrintf("%" PRId64 ": Node %" PRIu8 " received result from Node %" PRIu8 " \n", localTime, node->id, msg->senderId);
+      #endif
+      RangingManager_RecordRangingMsgIn(node, msg);
       Neighborhood_UpdateRanging(node, msg->senderId, msg->timestamp, msg->distance);
       break;
   };

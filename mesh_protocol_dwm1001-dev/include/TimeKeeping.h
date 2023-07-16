@@ -49,6 +49,10 @@
 #include "ProtocolClock.h"
 #include "NetworkManager.h"
 
+#ifdef SIMULATION
+#include "mex.h"
+#endif
+
 typedef struct TimeKeepingStruct * TimeKeeping;
 
 /** 

@@ -598,6 +598,10 @@ static void removeExpiredSlotsFromSlotMap(Node node, int *slotMapStatus, int8_t 
     };
 
     if (localTime > (slotMapLastUpdated[i] + timeout) && slotMapLastUpdated[i] != 0) {
+      #ifdef SIMULATION
+      if (slotMapIds[i] != 0)
+        mexPrintf("Node %" PRIu8 ": slot %" PRIu8 " of node %" PRIu8 " timed out \n", node->id, (i+1), slotMapIds[i]);
+      #endif
       slotMapStatus[i] = FREE;
       slotMapIds[i] = 0;
     };
@@ -614,6 +618,10 @@ int16_t SlotMap_RemoveExpiredPendingSlots(Node node, int8_t *buffer, int8_t size
   // find expired pending slots
   for(int i = 0; i < node->slotMap->numPendingSlots; ++i) {
     if (localTime > node->slotMap->localTimePendingSlotAdded[i] + node->config->ownSlotExpirationTimeOut) {
+      #ifdef SIMULATION
+      mexPrintf("%" PRId64 ": Node %" PRIu8 ": pending slot is expired: %" PRId64 "\n", localTime, node->id, node->slotMap->pendingSlots[i]);
+      #endif
+
       expiredPendingSlots[numExpiredPending] = node->slotMap->pendingSlots[i];
       ++numExpiredPending;
     };
@@ -645,6 +653,9 @@ int16_t SlotMap_RemoveExpiredOwnSlots(Node node, int8_t *buffer, int8_t size) {
     int64_t slotLastAcknowledged = node->slotMap->twoHopSlotsLastUpdated[slotNum - 1];
 
     if (localTime > (slotLastAcknowledged + node->config->ownSlotExpirationTimeOut)) {
+      #ifdef SIMULATION
+      mexPrintf("%" PRId64 ": Node %" PRIu8 ": own slot is expired: %" PRId8 " (last ack: %"PRId64 ")\n", localTime, node->id, node->slotMap->ownSlots[i], slotLastAcknowledged);
+      #endif 
       expiredOwnSlots[numExpiredOwn] = node->slotMap->ownSlots[i];
       ++numExpiredOwn;
     };
@@ -820,6 +831,11 @@ static void updateMultiHopSlotMap(Node node, Message msg, int *multiHopSlotMapSt
       case FREE:
         // newly reported status is FREE; only overwrite if current status of slot is expired
         if(multiHopSlotIsExpired(node, slotIdx+1, node->config->occupiedToFreeTimeoutMultiHop, multiHopSlotMapLastUpdate)) {
+          #ifdef SIMULATION
+            #if DEBUG_VERBOSE
+              mexPrintf("Node %" PRIu8 " multi hop slot is expired: %d \n", node->id, (slotIdx + 1));
+            #endif
+          #endif
           multiHopSlotMapStatus[slotIdx] = newStatus;
           multiHopSlotMapIds[slotIdx] = 0;
         };

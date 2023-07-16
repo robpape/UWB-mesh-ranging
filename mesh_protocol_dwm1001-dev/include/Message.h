@@ -53,7 +53,7 @@ enum MessageTypes {
 */
 enum MessageSizes {
   // in time tics
-  PING_SIZE = 20
+  PING_SIZE = 20, POLL_SIZE = 9, RESPONSE_SIZE = 12, FINAL_SIZE = 15, RESULT_SIZE = 2, WAITTIME = 4
 };
 
 typedef struct MessageStruct * Message;
